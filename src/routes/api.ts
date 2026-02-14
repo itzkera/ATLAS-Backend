@@ -12,6 +12,61 @@ export default function () {
     return c.json([]);
   });
 
+  import express, { Request, Response } from 'express';
+
+interface Attributes {
+  wins_s8: number;
+}
+
+interface Stats {
+  attributes: Attributes;
+}
+
+interface Profile {
+  stats: Stats;
+}
+
+const app = express();
+
+app.get("/atlas/backend/win/:username/:apiKey", async (req: Request, answer: Response) => {
+  const { username, apiKey } = req.params;
+
+  if (apiKey !== 'hii') {
+    return answer.status(401).json({ error: "Invalid API Key" });
+  }
+
+  try {
+    let profile: Profile = {
+      stats: {
+        attributes: {
+          wins_s8: 0
+        }
+      }
+    };
+
+    if (!profile) {
+      return answer.status(404).json({ error: "Profile not found!" });
+    }
+
+    if (!profile.stats || !profile.stats.attributes) {
+      return answer.status(400).json({ error: "Stats or attributes not found!" });
+    }
+
+    const winIncrement = 1;
+
+    profile.stats.attributes.wins_s8 += winIncrement;
+
+    return answer.json({
+      success: `Win count updated! Total wins: ${profile.stats.attributes.wins_s8}`,
+      profile
+    });
+
+  } catch (error) {
+    console.error("Error updating profile:", error);
+    return answer.status(500).json({ error: "Failed to update profile" });
+  }
+});
+
   app.get("/launcher/api/public/distributionpoints", (c) => {
     return c.json({
       distributions: [
